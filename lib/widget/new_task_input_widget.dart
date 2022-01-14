@@ -15,6 +15,7 @@ class NewTaskInput extends StatefulWidget {
 
 class _NewTaskInputState extends State<NewTaskInput> {
   DateTime? newTaskDate;
+  Tag? selectedTag;
   TextEditingController? controller;
 
   @override
@@ -32,6 +33,8 @@ class _NewTaskInputState extends State<NewTaskInput> {
             mainAxisSize: MainAxisSize.max,
             children: <Widget>[
               _buildTextField(context),
+              // tambahin selector tag
+              _buildTagSelector(context),
               _buildDateButton(context),
             ],
           ),
@@ -48,11 +51,68 @@ class _NewTaskInputState extends State<NewTaskInput> {
           final task = TasksCompanion(
             name: Value(inputName),
             dueDate: Value(newTaskDate),
+            //tambah task disini
+            tagName: Value(selectedTag?.name),
           );
           dao.insertTask(task);
           resetValuesAfterSubmit();
         },
       ),
+    );
+  }
+
+  // buat selector tag
+  StreamBuilder<List<Tag>> _buildTagSelector(BuildContext context) {
+    return StreamBuilder<List<Tag>>(
+      stream: Provider.of<TagDao>(context).watchTags(),
+      builder: (context, snapshot) {
+        // ini beda dari resocoder sikit
+        final List<Tag> tags = snapshot.data ?? [];
+
+        DropdownMenuItem<Tag> dropdownFromTag(Tag tag) {
+          return DropdownMenuItem(
+            value: tag,
+            child: Row(
+              children: <Widget>[
+                Text(tag.name),
+                SizedBox(width: 5),
+                Container(
+                  width: 15,
+                  height: 15,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Color(tag.color),
+                  ),
+                ),
+              ],
+            ),
+          );
+        }
+
+        final dropdownMenuItems =
+        tags.map((tag) => dropdownFromTag(tag)).toList()
+        // Add a "no tag" item as the first element of the list
+          ..insert(
+            0,
+            DropdownMenuItem(
+              value: null,
+              child: Text('No Tag'),
+            ),
+          );
+
+        return Expanded(
+          child: DropdownButton<Tag>(
+            onChanged: (Tag? tag) {
+              setState(() {
+                selectedTag = tag;
+              });
+            },
+            isExpanded: true,
+            value: selectedTag,
+            items: dropdownMenuItems,
+          ),
+        );
+      },
     );
   }
 
