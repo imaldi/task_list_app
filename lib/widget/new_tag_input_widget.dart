@@ -16,9 +16,9 @@ class NewTagInput extends StatefulWidget {
 }
 
 class _NewTagInputState extends State<NewTagInput> {
-  static const Color DEFAULT_COLOR = Colors.red;
+  static const Color defaultColor = Colors.red;
 
-  Color pickedTagColor = DEFAULT_COLOR;
+  Color pickedTagColor = defaultColor;
   late TextEditingController controller;
 
   @override
@@ -45,7 +45,7 @@ class _NewTagInputState extends State<NewTagInput> {
       flex: 1,
       child: TextField(
         controller: controller,
-        decoration: InputDecoration(hintText: 'Tag Name'),
+        decoration: const InputDecoration(hintText: 'Tag Name'),
         onSubmitted: (inputName) {
           final dao = Provider.of<TagDao>(context, listen: false);
           final task = TagsCompanion(
@@ -85,7 +85,7 @@ class _NewTagInputState extends State<NewTagInput> {
         return AlertDialog(
           content: MaterialColorPicker(
             allowShades: false,
-            selectedColor: DEFAULT_COLOR,
+            selectedColor: defaultColor,
             onMainColorChange: (colorSwatch) {
               setState(() {
                 // akal2in dikit, beda dari resocoder
@@ -101,7 +101,7 @@ class _NewTagInputState extends State<NewTagInput> {
 
   void resetValuesAfterSubmit() {
     setState(() {
-      pickedTagColor = DEFAULT_COLOR;
+      pickedTagColor = defaultColor;
       controller.clear();
     });
   }

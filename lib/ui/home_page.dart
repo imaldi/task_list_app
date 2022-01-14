@@ -19,9 +19,9 @@ class _HomePageState extends State<HomePage> {
         appBar: AppBar(
           title: Text('Tasks'),
           // TODO nanti terapkan dengan TaskWithTag
-          // actions: <Widget>[
-          //   _buildCompletedOnlySwitch(),
-          // ],
+          actions: <Widget>[
+            _buildCompletedOnlySwitch(),
+          ],
         ),
         body: Column(
           children: <Widget>[
@@ -35,30 +35,30 @@ class _HomePageState extends State<HomePage> {
 
   // TODO nanti terapkan dengan TaskWithTag
 
-  // Row _buildCompletedOnlySwitch() {
-  //   return Row(
-  //     children: <Widget>[
-  //       Text('Completed only'),
-  //       Switch(
-  //         value: showCompleted,
-  //         activeColor: Colors.white,
-  //         onChanged: (newValue) {
-  //           setState(() {
-  //             showCompleted = newValue;
-  //           });
-  //         },
-  //       ),
-  //     ],
-  //   );
-  // }
+  Row _buildCompletedOnlySwitch() {
+    return Row(
+      children: <Widget>[
+        const Text('Completed only'),
+        Switch(
+          value: showCompleted,
+          activeColor: Colors.white,
+          onChanged: (newValue) {
+            setState(() {
+              showCompleted = newValue;
+            });
+          },
+        ),
+      ],
+    );
+  }
 
   StreamBuilder<List<TaskWithTag>> _buildTaskList(BuildContext context) {
     final dao = Provider.of<TaskDao>(context);
     return StreamBuilder(
       stream:
       // TODO nanti terapkan dengan TaskWithTag
-      // showCompleted ?
-      // dao.watchCompletedTasks() :
+      showCompleted ?
+      dao.watchCompletedTasks() :
       dao.watchAllTasks(),
       builder: (context, AsyncSnapshot<List<TaskWithTag>> snapshot) {
         final tasks = snapshot.data ?? [];

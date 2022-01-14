@@ -12,7 +12,8 @@ class Tasks extends Table {
   // autoIncrement automatically sets this to be the primary key
   IntColumn get id => integer().autoIncrement()();
   // add nullable tagName
-  TextColumn get tagName => text().nullable().customConstraint('NULL REFERENCES tags(name)')();
+  TextColumn get tagName =>
+      text().nullable().customConstraint('NULL REFERENCES tags(name)')();
   // If the length constraint is not fulfilled, the Task will not
   // be inserted into the database and an exception will be thrown.
   TextColumn get name => text().withLength(min: 1, max: 50)();
@@ -53,12 +54,12 @@ class TaskWithTag {
 // _$AppDatabase is the name of the generated class
 class AppDatabase extends _$AppDatabase {
   AppDatabase()
-  // Specify the location of the database file
+      // Specify the location of the database file
       : super((FlutterQueryExecutor.inDatabaseFolder(
-    path: 'db.sqlite',
-    // Good for debugging - prints SQL in the console
-    logStatements: true,
-  )));
+          path: 'db.sqlite',
+          // Good for debugging - prints SQL in the console
+          logStatements: true,
+        )));
 
   // Bump this when changing tables and columns.
   // Migrations will be covered in the next part.
@@ -68,26 +69,24 @@ class AppDatabase extends _$AppDatabase {
   // sebenarnya untuk update data, migrasi, tapi tadi ada eror jadi data sebelumnya kehapus hehe
   @override
   MigrationStrategy get migration => MigrationStrategy(
-    // Runs if the database has already been opened on the device with a lower version
-    onUpgrade: (migrator, from, to) async {
-      if (from == 1) {
-        await migrator.addColumn(tasks, tasks.tagName);
-        await migrator.createTable(tags);
-      }
-    },
-      // This migration property ties in nicely with the foreign key we've added previously.
-    // It turns out that foreign keys are actually not enabled by default in SQLite - we have to
-    // enable them ourselves with a custom statement.
-    // We want to run this statement before any other queries are run to
-    // prevent the chance of  "unchecked data" from entering the database.
-    // This is a perfect use-case for the beforeOpen callback.
-    // Runs after all the migrations but BEFORE any queries have a chance to execute
-    beforeOpen: (details) async {
-      // ini lumayan beda dari Reso Coder, tapi kyknya ini caranya
-      await customStatement('PRAGMA foreign_keys = ON');
-    }
-
-  );
+          // Runs if the database has already been opened on the device with a lower version
+          onUpgrade: (migrator, from, to) async {
+        if (from == 1) {
+          await migrator.addColumn(tasks, tasks.tagName);
+          await migrator.createTable(tags);
+        }
+      },
+          // This migration property ties in nicely with the foreign key we've added previously.
+          // It turns out that foreign keys are actually not enabled by default in SQLite - we have to
+          // enable them ourselves with a custom statement.
+          // We want to run this statement before any other queries are run to
+          // prevent the chance of  "unchecked data" from entering the database.
+          // This is a perfect use-case for the beforeOpen callback.
+          // Runs after all the migrations but BEFORE any queries have a chance to execute
+          beforeOpen: (details) async {
+        // ini lumayan beda dari Reso Coder, tapi kyknya ini caranya
+        await customStatement('PRAGMA foreign_keys = ON');
+      });
 }
 
 // Denote which tables this DAO can access
@@ -103,57 +102,76 @@ class TaskDao extends DatabaseAccessor<AppDatabase> with _$TaskDaoMixin {
   Stream<List<TaskWithTag>> watchAllTasks() {
     // Wrap the whole select statement in parenthesis
     return (select(tasks)
-    // Statements like orderBy and where return void => the need to use a cascading ".." operator
-      ..orderBy(
-        ([
-          // Primary sorting by due date
+          // Statements like orderBy and where return void => the need to use a cascading ".." operator
+          ..orderBy(
+            ([
+              // Primary sorting by due date
               (t) =>
-              OrderingTerm(expression: t.dueDate, mode: OrderingMode.asc),
-          // Secondary alphabetical sorting
+                  OrderingTerm(expression: t.dueDate, mode: OrderingMode.asc),
+              // Secondary alphabetical sorting
               (t) => OrderingTerm(expression: t.name),
-        ]),
-      ))
-    // TODO nanti perdalami lagi soal join di moor ini
-    // As opposed to orderBy or where, join returns a value. This is what we want to watch/get.
+            ]),
+          ))
+        // TODO nanti perdalami lagi soal join di moor ini
+        // As opposed to orderBy or where, join returns a value. This is what we want to watch/get.
         .join(
-      [
-        // Join all the tasks with their tags.
-        // It's important that we use equalsExp and not just equals.
-        // This way, we can join using all tag names in the tasks table, not just a specific one.
-        leftOuterJoin(tags, tags.name.equalsExp(tasks.tagName)),
-      ],
-    )
-    // watch the whole select statement including the join
+          [
+            // Join all the tasks with their tags.
+            // It's important that we use equalsExp and not just equals.
+            // This way, we can join using all tag names in the tasks table, not just a specific one.
+            leftOuterJoin(tags, tags.name.equalsExp(tasks.tagName)),
+          ],
+        )
+        // watch the whole select statement including the join
         .watch()
-    // Watching a join gets us a Stream of List<TypedResult>
-    // Mapping each List<TypedResult> emitted by the Stream to a List<TaskWithTag>
+        // Watching a join gets us a Stream of List<TypedResult>
+        // Mapping each List<TypedResult> emitted by the Stream to a List<TaskWithTag>
         .map(
           (rows) => rows.map(
             (row) {
-          return TaskWithTag(
-            task: row.readTable(tasks),
-            tag: row.readTable(tags),
-          );
-        },
-      ).toList(),
-    );
+              return TaskWithTag(
+                task: row.readTable(tasks),
+                tag: row.readTable(tags),
+              );
+            },
+          ).toList(),
+        );
   }
 
-  Stream<List<Task>> watchCompletedTasks() {
+  Stream<List<TaskWithTag>> watchCompletedTasks() {
     // where returns void, need to use the cascading operator
     return (select(tasks)
-      ..orderBy(
-        ([
-          // Primary sorting by due date
+          ..orderBy(
+            ([
+              // Primary sorting by due date
               (t) =>
-              OrderingTerm(expression: t.dueDate, mode: OrderingMode.desc),
-          // Secondary alphabetical sorting
+                  OrderingTerm(expression: t.dueDate, mode: OrderingMode.desc),
+              // Secondary alphabetical sorting
               (t) => OrderingTerm(expression: t.name),
-        ]),
-      )
-      ..where((t) => t.completed.equals(true)))
-        .watch();
+            ]),
+          )
+          ..where((t) => t.completed.equals(true)))
+        .join(
+          [
+            // Join all the tasks with their tags.
+            // It's important that we use equalsExp and not just equals.
+            // This way, we can join using all tag names in the tasks table, not just a specific one.
+            leftOuterJoin(tags, tags.name.equalsExp(tasks.tagName)),
+          ],
+        )
+        .watch()
+        .map(
+          (rows) => rows.map(
+            (row) {
+              return TaskWithTag(
+                task: row.readTable(tasks),
+                tag: row.readTable(tags),
+              );
+            },
+          ).toList(),
+        );
   }
+
   Future insertTask(Insertable<Task> task) => into(tasks).insert(task);
 
   // Updates a Task with a matching primary key

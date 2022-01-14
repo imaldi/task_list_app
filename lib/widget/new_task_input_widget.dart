@@ -45,7 +45,7 @@ class _NewTaskInputState extends State<NewTaskInput> {
     return Expanded(
       child: TextField(
         controller: controller,
-        decoration: InputDecoration(hintText: 'Task Name'),
+        decoration: const InputDecoration(hintText: 'Task Name'),
         onSubmitted: (inputName) {
           final dao = Provider.of<TaskDao>(context,listen: false);
           final task = TasksCompanion(
@@ -75,7 +75,7 @@ class _NewTaskInputState extends State<NewTaskInput> {
             child: Row(
               children: <Widget>[
                 Text(tag.name),
-                SizedBox(width: 5),
+                const SizedBox(width: 5),
                 Container(
                   width: 15,
                   height: 15,
@@ -94,7 +94,7 @@ class _NewTaskInputState extends State<NewTaskInput> {
         // Add a "no tag" item as the first element of the list
           ..insert(
             0,
-            DropdownMenuItem(
+            const DropdownMenuItem(
               value: null,
               child: Text('No Tag'),
             ),
@@ -118,7 +118,7 @@ class _NewTaskInputState extends State<NewTaskInput> {
 
   IconButton _buildDateButton(BuildContext context) {
     return IconButton(
-      icon: Icon(Icons.calendar_today),
+      icon: const Icon(Icons.calendar_today),
       onPressed: () async {
         newTaskDate = await showDatePicker(
           context: context,
