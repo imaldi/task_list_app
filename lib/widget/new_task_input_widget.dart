@@ -25,20 +25,17 @@ class _NewTaskInputState extends State<NewTaskInput> {
 
   @override
   Widget build(BuildContext context) {
-    return Builder(
-      builder: (c) {
-        return Container(
+    return
+          Container(
           padding: const EdgeInsets.all(8.0),
           child: Row(
             mainAxisSize: MainAxisSize.max,
             children: <Widget>[
-              _buildTextField(c),
-              _buildDateButton(c),
+              _buildTextField(context),
+              _buildDateButton(context),
             ],
           ),
         );
-      }
-    );
   }
 
   Expanded _buildTextField(BuildContext context) {
@@ -47,12 +44,12 @@ class _NewTaskInputState extends State<NewTaskInput> {
         controller: controller,
         decoration: InputDecoration(hintText: 'Task Name'),
         onSubmitted: (inputName) {
-          final database = Provider.of<AppDatabase>(context,listen: false);
+          final dao = Provider.of<TaskDao>(context,listen: false);
           final task = TasksCompanion(
             name: Value(inputName),
             dueDate: Value(newTaskDate),
           );
-          database.insertTask(task);
+          dao.insertTask(task);
           resetValuesAfterSubmit();
         },
       ),

@@ -9,12 +9,12 @@ void main() => runApp(MyApp());
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return Provider<AppDatabase>(
+    return Provider<TaskDao>(
       // The single instance of AppDatabase
       // builder: (_) => ,
-      create: (BuildContext context) { return AppDatabase(); },
+      create: (BuildContext context) { return AppDatabase().taskDao; },
       child: MaterialApp(
-        title: 'Material App',
+        title: 'Material App',debugShowCheckedModeBanner: false,
         home: HomePage(),
       ),
     );
