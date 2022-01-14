@@ -45,10 +45,10 @@ class AppDatabase extends _$AppDatabase {
   // Moor supports Streams which emit elements when the watched data changes
   Stream<List<Task>> watchAllTasks() => select(tasks).watch();
 
-  Future insertTask(Task task) => into(tasks).insert(task);
+  Future insertTask(Insertable<Task> task) => into(tasks).insert(task);
 
   // Updates a Task with a matching primary key
-  Future updateTask(Task task) => update(tasks).replace(task);
+  Future updateTask(Insertable<Task> task) => update(tasks).replace(task);
 
-  Future deleteTask(Task task) => delete(tasks).delete(task);
+  Future deleteTask(Insertable<Task> task) => delete(tasks).delete(task);
 }

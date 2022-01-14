@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:moor_flutter/moor_flutter.dart';
 import 'package:provider/provider.dart';
 
 import '../../data/moor_database.dart';
@@ -24,15 +25,19 @@ class _NewTaskInputState extends State<NewTaskInput> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(8.0),
-      child: Row(
-        mainAxisSize: MainAxisSize.max,
-        children: <Widget>[
-          _buildTextField(context),
-          _buildDateButton(context),
-        ],
-      ),
+    return Builder(
+      builder: (c) {
+        return Container(
+          padding: const EdgeInsets.all(8.0),
+          child: Row(
+            mainAxisSize: MainAxisSize.max,
+            children: <Widget>[
+              _buildTextField(c),
+              _buildDateButton(c),
+            ],
+          ),
+        );
+      }
     );
   }
 
@@ -42,10 +47,10 @@ class _NewTaskInputState extends State<NewTaskInput> {
         controller: controller,
         decoration: InputDecoration(hintText: 'Task Name'),
         onSubmitted: (inputName) {
-          final database = Provider.of<AppDatabase>(context);
-          final task = Task(
-            name: inputName,
-            dueDate: newTaskDate,
+          final database = Provider.of<AppDatabase>(context,listen: false);
+          final task = TasksCompanion(
+            name: Value(inputName),
+            dueDate: Value(newTaskDate),
           );
           database.insertTask(task);
           resetValuesAfterSubmit();

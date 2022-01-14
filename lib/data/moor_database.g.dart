@@ -13,13 +13,10 @@ class Task extends DataClass implements Insertable<Task> {
   final DateTime? dueDate;
   final bool completed;
   Task(
-      {
-        required
-      this.id,
+      {required this.id,
       required this.name,
       this.dueDate,
-      // required
-      this.completed = false});
+      required this.completed});
   factory Task.fromData(Map<String, dynamic> data, GeneratedDatabase db,
       {String? prefix}) {
     final effectivePrefix = prefix ?? '';
