@@ -1,4 +1,4 @@
-import 'package:moor/moor.dart';
+import 'package:drift/drift.dart';
 import 'package:moor_flutter/moor_flutter.dart';
 
 // Moor works by source gen. This file will all the generated code.
@@ -40,17 +40,17 @@ class Tags extends Table {
 // This class will be used for the table join.
 class TaskWithTag {
   final Task task;
-  final Tag tag;
+  final Tag? tag;
 
   TaskWithTag({
     required this.task,
-    required this.tag,
+    this.tag,
   });
 }
 
 // This annotation tells the code generator which tables this DB works with
 // update table dan dao yang dipakai
-@UseMoor(tables: [Tasks, Tags], daos: [TaskDao, TagDao])
+@DriftDatabase(tables: [Tasks, Tags], daos: [TaskDao, TagDao])
 // _$AppDatabase is the name of the generated class
 class AppDatabase extends _$AppDatabase {
   AppDatabase()
@@ -90,7 +90,7 @@ class AppDatabase extends _$AppDatabase {
 }
 
 // Denote which tables this DAO can access
-@UseDao(tables: [Tasks, Tags])
+@DriftAccessor(tables: [Tasks, Tags])
 class TaskDao extends DatabaseAccessor<AppDatabase> with _$TaskDaoMixin {
   final AppDatabase db;
 
@@ -101,41 +101,44 @@ class TaskDao extends DatabaseAccessor<AppDatabase> with _$TaskDaoMixin {
   // Return TaskWithTag now
   Stream<List<TaskWithTag>> watchAllTasks() {
     // Wrap the whole select statement in parenthesis
-    return (select(tasks)
-          // Statements like orderBy and where return void => the need to use a cascading ".." operator
-          ..orderBy(
-            ([
-              // Primary sorting by due date
+    var val = (select(tasks)
+    // Statements like orderBy and where return void => the need to use a cascading ".." operator
+      ..orderBy(
+        ([
+          // Primary sorting by due date
               (t) =>
-                  OrderingTerm(expression: t.dueDate, mode: OrderingMode.asc),
-              // Secondary alphabetical sorting
+              OrderingTerm(expression: t.dueDate, mode: OrderingMode.desc),
+          // Secondary alphabetical sorting
               (t) => OrderingTerm(expression: t.name),
-            ]),
-          ))
-        // TODO nanti perdalami lagi soal join di moor ini
-        // As opposed to orderBy or where, join returns a value. This is what we want to watch/get.
+        ]),
+      ))
+    // TODO nanti perdalami lagi soal join di moor ini
+    // As opposed to orderBy or where, join returns a value. This is what we want to watch/get.
         .join(
-          [
-            // Join all the tasks with their tags.
-            // It's important that we use equalsExp and not just equals.
-            // This way, we can join using all tag names in the tasks table, not just a specific one.
-            leftOuterJoin(tags, tags.name.equalsExp(tasks.tagName)),
-          ],
-        )
-        // watch the whole select statement including the join
+      [
+        // Join all the tasks with their tags.
+        // It's important that we use equalsExp and not just equals.
+        // This way, we can join using all tag names in the tasks table, not just a specific one.
+        leftOuterJoin(tags, tags.name.equalsExp(tasks.tagName)),
+      ],
+    )
+    // watch the whole select statement including the join
         .watch()
-        // Watching a join gets us a Stream of List<TypedResult>
-        // Mapping each List<TypedResult> emitted by the Stream to a List<TaskWithTag>
+    // Watching a join gets us a Stream of List<TypedResult>
+    // Mapping each List<TypedResult> emitted by the Stream to a List<TaskWithTag>
         .map(
           (rows) => rows.map(
             (row) {
-              return TaskWithTag(
-                task: row.readTable(tasks),
-                tag: row.readTable(tags),
-              );
-            },
-          ).toList(),
-        );
+          return TaskWithTag(
+            task: row.readTable(tasks),
+            // In dia penyebab masalah, tutorial dibuat ketika null safety belum ada di dart
+            tag: row.readTableOrNull(tags),
+          );
+        },
+      ).toList(),
+    );
+    print("This is the list boy: ${val.toList().toString()}");
+    return val;
   }
 
   Stream<List<TaskWithTag>> watchCompletedTasks() {
@@ -180,7 +183,7 @@ class TaskDao extends DatabaseAccessor<AppDatabase> with _$TaskDaoMixin {
   Future deleteTask(Insertable<Task> task) => delete(tasks).delete(task);
 }
 
-@UseDao(tables: [Tags])
+@DriftAccessor(tables: [Tags])
 class TagDao extends DatabaseAccessor<AppDatabase> with _$TagDaoMixin {
   final AppDatabase db;
 

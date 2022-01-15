@@ -19,8 +19,7 @@ class Task extends DataClass implements Insertable<Task> {
       required this.name,
       this.dueDate,
       required this.completed});
-  factory Task.fromData(Map<String, dynamic> data, GeneratedDatabase db,
-      {String? prefix}) {
+  factory Task.fromData(Map<String, dynamic> data, {String? prefix}) {
     final effectivePrefix = prefix ?? '';
     return Task(
       id: const IntType()
@@ -66,7 +65,7 @@ class Task extends DataClass implements Insertable<Task> {
 
   factory Task.fromJson(Map<String, dynamic> json,
       {ValueSerializer? serializer}) {
-    serializer ??= moorRuntimeOptions.defaultSerializer;
+    serializer ??= driftRuntimeOptions.defaultSerializer;
     return Task(
       id: serializer.fromJson<int>(json['id']),
       tagName: serializer.fromJson<String?>(json['tagName']),
@@ -77,7 +76,7 @@ class Task extends DataClass implements Insertable<Task> {
   }
   @override
   Map<String, dynamic> toJson({ValueSerializer? serializer}) {
-    serializer ??= moorRuntimeOptions.defaultSerializer;
+    serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'id': serializer.toJson<int>(id),
       'tagName': serializer.toJson<String?>(tagName),
@@ -283,7 +282,7 @@ class $TasksTable extends Tasks with TableInfo<$TasksTable, Task> {
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
   Task map(Map<String, dynamic> data, {String? tablePrefix}) {
-    return Task.fromData(data, _db,
+    return Task.fromData(data,
         prefix: tablePrefix != null ? '$tablePrefix.' : null);
   }
 
@@ -297,8 +296,7 @@ class Tag extends DataClass implements Insertable<Tag> {
   final String name;
   final int color;
   Tag({required this.name, required this.color});
-  factory Tag.fromData(Map<String, dynamic> data, GeneratedDatabase db,
-      {String? prefix}) {
+  factory Tag.fromData(Map<String, dynamic> data, {String? prefix}) {
     final effectivePrefix = prefix ?? '';
     return Tag(
       name: const StringType()
@@ -324,7 +322,7 @@ class Tag extends DataClass implements Insertable<Tag> {
 
   factory Tag.fromJson(Map<String, dynamic> json,
       {ValueSerializer? serializer}) {
-    serializer ??= moorRuntimeOptions.defaultSerializer;
+    serializer ??= driftRuntimeOptions.defaultSerializer;
     return Tag(
       name: serializer.fromJson<String>(json['name']),
       color: serializer.fromJson<int>(json['color']),
@@ -332,7 +330,7 @@ class Tag extends DataClass implements Insertable<Tag> {
   }
   @override
   Map<String, dynamic> toJson({ValueSerializer? serializer}) {
-    serializer ??= moorRuntimeOptions.defaultSerializer;
+    serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'name': serializer.toJson<String>(name),
       'color': serializer.toJson<int>(color),
@@ -456,7 +454,7 @@ class $TagsTable extends Tags with TableInfo<$TagsTable, Tag> {
   Set<GeneratedColumn> get $primaryKey => {name};
   @override
   Tag map(Map<String, dynamic> data, {String? tablePrefix}) {
-    return Tag.fromData(data, _db,
+    return Tag.fromData(data,
         prefix: tablePrefix != null ? '$tablePrefix.' : null);
   }
 

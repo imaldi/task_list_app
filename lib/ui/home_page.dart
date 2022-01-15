@@ -74,7 +74,7 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Column _buildTag(Tag tag) {
+  Column _buildTag(Tag? tag) {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       crossAxisAlignment: CrossAxisAlignment.start,

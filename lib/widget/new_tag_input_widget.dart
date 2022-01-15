@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_material_color_picker/flutter_material_color_picker.dart';
-import 'package:moor/moor.dart';
+import 'package:drift/drift.dart';
 import 'package:provider/provider.dart';
 
 import '../../data/moor_database.dart';
