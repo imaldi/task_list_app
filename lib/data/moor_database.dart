@@ -1,5 +1,9 @@
+import 'dart:io';
+
 import 'package:drift/drift.dart';
-import 'package:moor_flutter/moor_flutter.dart';
+import 'package:drift/native.dart';
+import 'package:sqflite/sqflite.dart' show getDatabasesPath;
+import 'package:path/path.dart' as p;
 
 // Moor works by source gen. This file will all the generated code.
 part 'moor_database.g.dart';
@@ -48,6 +52,8 @@ class TaskWithTag {
   });
 }
 
+
+
 // This annotation tells the code generator which tables this DB works with
 // update table dan dao yang dipakai
 @DriftDatabase(tables: [Tasks, Tags], daos: [TaskDao, TagDao])
@@ -55,11 +61,22 @@ class TaskWithTag {
 class AppDatabase extends _$AppDatabase {
   AppDatabase()
       // Specify the location of the database file
-      : super((FlutterQueryExecutor.inDatabaseFolder(
-          path: 'db.sqlite',
-          // Good for debugging - prints SQL in the console
-          logStatements: true,
-        )));
+      : super(
+      LazyDatabase(() async {
+        final dbFolder = await getDatabasesPath();
+        final file = File(p.join(dbFolder, 'db.sqlite'));
+        return NativeDatabase(file,logStatements: true);
+      })
+
+      // FlutterQueryExecutor.inDatabaseFolder(
+      //     path: 'db.sqlite',
+      //     // Good for debugging - prints SQL in the console
+      //     logStatements: true,
+      //   )
+
+  );
+
+
 
   // Bump this when changing tables and columns.
   // Migrations will be covered in the next part.

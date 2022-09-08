@@ -3,47 +3,32 @@
 part of 'moor_database.dart';
 
 // **************************************************************************
-// MoorGenerator
+// DriftDatabaseGenerator
 // **************************************************************************
 
-// ignore_for_file: unnecessary_brace_in_string_interps, unnecessary_this
+// ignore_for_file: type=lint
 class Task extends DataClass implements Insertable<Task> {
   final int id;
   final String? tagName;
   final String name;
   final DateTime? dueDate;
   final bool completed;
-  Task(
+  const Task(
       {required this.id,
       this.tagName,
       required this.name,
       this.dueDate,
       required this.completed});
-  factory Task.fromData(Map<String, dynamic> data, {String? prefix}) {
-    final effectivePrefix = prefix ?? '';
-    return Task(
-      id: const IntType()
-          .mapFromDatabaseResponse(data['${effectivePrefix}id'])!,
-      tagName: const StringType()
-          .mapFromDatabaseResponse(data['${effectivePrefix}tag_name']),
-      name: const StringType()
-          .mapFromDatabaseResponse(data['${effectivePrefix}name'])!,
-      dueDate: const DateTimeType()
-          .mapFromDatabaseResponse(data['${effectivePrefix}due_date']),
-      completed: const BoolType()
-          .mapFromDatabaseResponse(data['${effectivePrefix}completed'])!,
-    );
-  }
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     map['id'] = Variable<int>(id);
     if (!nullToAbsent || tagName != null) {
-      map['tag_name'] = Variable<String?>(tagName);
+      map['tag_name'] = Variable<String>(tagName);
     }
     map['name'] = Variable<String>(name);
     if (!nullToAbsent || dueDate != null) {
-      map['due_date'] = Variable<DateTime?>(dueDate);
+      map['due_date'] = Variable<DateTime>(dueDate);
     }
     map['completed'] = Variable<bool>(completed);
     return map;
@@ -88,15 +73,15 @@ class Task extends DataClass implements Insertable<Task> {
 
   Task copyWith(
           {int? id,
-          String? tagName,
+          Value<String?> tagName = const Value.absent(),
           String? name,
-          DateTime? dueDate,
+          Value<DateTime?> dueDate = const Value.absent(),
           bool? completed}) =>
       Task(
         id: id ?? this.id,
-        tagName: tagName ?? this.tagName,
+        tagName: tagName.present ? tagName.value : this.tagName,
         name: name ?? this.name,
-        dueDate: dueDate ?? this.dueDate,
+        dueDate: dueDate.present ? dueDate.value : this.dueDate,
         completed: completed ?? this.completed,
       );
   @override
@@ -146,9 +131,9 @@ class TasksCompanion extends UpdateCompanion<Task> {
   }) : name = Value(name);
   static Insertable<Task> custom({
     Expression<int>? id,
-    Expression<String?>? tagName,
+    Expression<String>? tagName,
     Expression<String>? name,
-    Expression<DateTime?>? dueDate,
+    Expression<DateTime>? dueDate,
     Expression<bool>? completed,
   }) {
     return RawValuesInsertable({
@@ -182,13 +167,13 @@ class TasksCompanion extends UpdateCompanion<Task> {
       map['id'] = Variable<int>(id.value);
     }
     if (tagName.present) {
-      map['tag_name'] = Variable<String?>(tagName.value);
+      map['tag_name'] = Variable<String>(tagName.value);
     }
     if (name.present) {
       map['name'] = Variable<String>(name.value);
     }
     if (dueDate.present) {
-      map['due_date'] = Variable<DateTime?>(dueDate.value);
+      map['due_date'] = Variable<DateTime>(dueDate.value);
     }
     if (completed.present) {
       map['completed'] = Variable<bool>(completed.value);
@@ -210,36 +195,42 @@ class TasksCompanion extends UpdateCompanion<Task> {
 }
 
 class $TasksTable extends Tasks with TableInfo<$TasksTable, Task> {
-  final GeneratedDatabase _db;
+  @override
+  final GeneratedDatabase attachedDatabase;
   final String? _alias;
-  $TasksTable(this._db, [this._alias]);
+  $TasksTable(this.attachedDatabase, [this._alias]);
   final VerificationMeta _idMeta = const VerificationMeta('id');
-  late final GeneratedColumn<int?> id = GeneratedColumn<int?>(
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
       'id', aliasedName, false,
-      typeName: 'INTEGER',
+      type: DriftSqlType.int,
       requiredDuringInsert: false,
       defaultConstraints: 'PRIMARY KEY AUTOINCREMENT');
   final VerificationMeta _tagNameMeta = const VerificationMeta('tagName');
-  late final GeneratedColumn<String?> tagName = GeneratedColumn<String?>(
+  @override
+  late final GeneratedColumn<String> tagName = GeneratedColumn<String>(
       'tag_name', aliasedName, true,
-      typeName: 'TEXT',
+      type: DriftSqlType.string,
       requiredDuringInsert: false,
       $customConstraints: 'NULL REFERENCES tags(name)');
   final VerificationMeta _nameMeta = const VerificationMeta('name');
-  late final GeneratedColumn<String?> name = GeneratedColumn<String?>(
+  @override
+  late final GeneratedColumn<String> name = GeneratedColumn<String>(
       'name', aliasedName, false,
       additionalChecks:
           GeneratedColumn.checkTextLength(minTextLength: 1, maxTextLength: 50),
-      typeName: 'TEXT',
+      type: DriftSqlType.string,
       requiredDuringInsert: true);
   final VerificationMeta _dueDateMeta = const VerificationMeta('dueDate');
-  late final GeneratedColumn<DateTime?> dueDate = GeneratedColumn<DateTime?>(
+  @override
+  late final GeneratedColumn<DateTime> dueDate = GeneratedColumn<DateTime>(
       'due_date', aliasedName, true,
-      typeName: 'INTEGER', requiredDuringInsert: false);
+      type: DriftSqlType.dateTime, requiredDuringInsert: false);
   final VerificationMeta _completedMeta = const VerificationMeta('completed');
-  late final GeneratedColumn<bool?> completed = GeneratedColumn<bool?>(
+  @override
+  late final GeneratedColumn<bool> completed = GeneratedColumn<bool>(
       'completed', aliasedName, false,
-      typeName: 'INTEGER',
+      type: DriftSqlType.bool,
       requiredDuringInsert: false,
       defaultConstraints: 'CHECK (completed IN (0, 1))',
       defaultValue: Constant(false));
@@ -282,29 +273,31 @@ class $TasksTable extends Tasks with TableInfo<$TasksTable, Task> {
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
   Task map(Map<String, dynamic> data, {String? tablePrefix}) {
-    return Task.fromData(data,
-        prefix: tablePrefix != null ? '$tablePrefix.' : null);
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return Task(
+      id: attachedDatabase.options.types
+          .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
+      tagName: attachedDatabase.options.types
+          .read(DriftSqlType.string, data['${effectivePrefix}tag_name']),
+      name: attachedDatabase.options.types
+          .read(DriftSqlType.string, data['${effectivePrefix}name'])!,
+      dueDate: attachedDatabase.options.types
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}due_date']),
+      completed: attachedDatabase.options.types
+          .read(DriftSqlType.bool, data['${effectivePrefix}completed'])!,
+    );
   }
 
   @override
   $TasksTable createAlias(String alias) {
-    return $TasksTable(_db, alias);
+    return $TasksTable(attachedDatabase, alias);
   }
 }
 
 class Tag extends DataClass implements Insertable<Tag> {
   final String name;
   final int color;
-  Tag({required this.name, required this.color});
-  factory Tag.fromData(Map<String, dynamic> data, {String? prefix}) {
-    final effectivePrefix = prefix ?? '';
-    return Tag(
-      name: const StringType()
-          .mapFromDatabaseResponse(data['${effectivePrefix}name'])!,
-      color: const IntType()
-          .mapFromDatabaseResponse(data['${effectivePrefix}color'])!,
-    );
-  }
+  const Tag({required this.name, required this.color});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
@@ -410,20 +403,23 @@ class TagsCompanion extends UpdateCompanion<Tag> {
 }
 
 class $TagsTable extends Tags with TableInfo<$TagsTable, Tag> {
-  final GeneratedDatabase _db;
+  @override
+  final GeneratedDatabase attachedDatabase;
   final String? _alias;
-  $TagsTable(this._db, [this._alias]);
+  $TagsTable(this.attachedDatabase, [this._alias]);
   final VerificationMeta _nameMeta = const VerificationMeta('name');
-  late final GeneratedColumn<String?> name = GeneratedColumn<String?>(
+  @override
+  late final GeneratedColumn<String> name = GeneratedColumn<String>(
       'name', aliasedName, false,
       additionalChecks:
           GeneratedColumn.checkTextLength(minTextLength: 1, maxTextLength: 10),
-      typeName: 'TEXT',
+      type: DriftSqlType.string,
       requiredDuringInsert: true);
   final VerificationMeta _colorMeta = const VerificationMeta('color');
-  late final GeneratedColumn<int?> color = GeneratedColumn<int?>(
+  @override
+  late final GeneratedColumn<int> color = GeneratedColumn<int>(
       'color', aliasedName, false,
-      typeName: 'INTEGER', requiredDuringInsert: true);
+      type: DriftSqlType.int, requiredDuringInsert: true);
   @override
   List<GeneratedColumn> get $columns => [name, color];
   @override
@@ -454,24 +450,30 @@ class $TagsTable extends Tags with TableInfo<$TagsTable, Tag> {
   Set<GeneratedColumn> get $primaryKey => {name};
   @override
   Tag map(Map<String, dynamic> data, {String? tablePrefix}) {
-    return Tag.fromData(data,
-        prefix: tablePrefix != null ? '$tablePrefix.' : null);
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return Tag(
+      name: attachedDatabase.options.types
+          .read(DriftSqlType.string, data['${effectivePrefix}name'])!,
+      color: attachedDatabase.options.types
+          .read(DriftSqlType.int, data['${effectivePrefix}color'])!,
+    );
   }
 
   @override
   $TagsTable createAlias(String alias) {
-    return $TagsTable(_db, alias);
+    return $TagsTable(attachedDatabase, alias);
   }
 }
 
 abstract class _$AppDatabase extends GeneratedDatabase {
-  _$AppDatabase(QueryExecutor e) : super(SqlTypeSystem.defaultInstance, e);
+  _$AppDatabase(QueryExecutor e) : super(e);
   late final $TasksTable tasks = $TasksTable(this);
   late final $TagsTable tags = $TagsTable(this);
   late final TaskDao taskDao = TaskDao(this as AppDatabase);
   late final TagDao tagDao = TagDao(this as AppDatabase);
   @override
-  Iterable<TableInfo> get allTables => allSchemaEntities.whereType<TableInfo>();
+  Iterable<TableInfo<Table, dynamic>> get allTables =>
+      allSchemaEntities.whereType<TableInfo<Table, Object?>>();
   @override
   List<DatabaseSchemaEntity> get allSchemaEntities => [tasks, tags];
 }

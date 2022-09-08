@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:moor_flutter/moor_flutter.dart';
+import 'package:drift/drift.dart';
 import 'package:provider/provider.dart';
 
 import '../../data/moor_database.dart';
